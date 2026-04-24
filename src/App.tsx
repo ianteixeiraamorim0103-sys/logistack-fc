@@ -199,24 +199,24 @@ export default function App() {
           </header>
 
           <div className="flex-1 p-4 lg:p-8 overflow-x-hidden w-full max-w-screen-xl mx-auto">
-          {isSuperAdminRoute ? (
-            <SuperAdminView currentUserEmail="iangamer815@gmail.com" />
-          ) : isExpired ? (
-            <SubscriptionGate onActivate={() => {}} />
-          ) : (
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
-              >
-                {/* TRAVA DE SEGURANÇA: Dashboard apenas para Produtores */}
-                {activeTab === 'dashboard' && userType === 'produtor' && <DashboardView userType={userType} />}
-                {activeTab === 'dashboard' && userType === 'afiliado' && (
-                  <div className="flex flex-col items-center justify-center h-64 text-center">
-                    <h2 className="text-2xl font-bold text-red-500 mb-4">Acesso Negado</h2>
+            {isSuperAdminRoute ? (
+              <SuperAdminView currentUserEmail="iangamer815@gmail.com" />
+            ) : isExpired ? (
+              <SubscriptionGate onActivate={() => {}} />
+            ) : (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                >
+                  {/* TRAVA DE SEGURANÇA: Dashboard apenas para Produtores */}
+                  {activeTab === 'dashboard' && userType === 'produtor' && <DashboardView userType={userType} />}
+                  {activeTab === 'dashboard' && userType === 'afiliado' && (
+                    <div className="flex flex-col items-center justify-center h-64 text-center">
+                      <h2 className="text-2xl font-bold text-red-500 mb-4">Acesso Negado</h2>
                     <p className="text-slate-400 mb-6">Afiliados não têm acesso ao Dashboard de Gestão.</p>
                     <button 
                       onClick={() => setActiveTab('products')}
@@ -246,15 +246,16 @@ export default function App() {
                 )}
               </motion.div>
             </AnimatePresence>
-          )}
-        </div>
+            )}
+          </div>
 
-        <footer className="p-8 border-t border-slate-800 text-center">
-          <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">
-            Logistack © 2026 - Tecnologia para Afiliados e Produtores
-          </p>
-        </footer>
-      </main>
+          <footer className="p-8 border-t border-slate-800 text-center">
+            <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">
+              Logistack © 2026 - Tecnologia para Afiliados e Produtores
+            </p>
+          </footer>
+        </div>
+      </div>
 
       <motion.button
         initial={{ scale: 0, opacity: 0 }}
@@ -272,8 +273,6 @@ export default function App() {
           <span>Suporte Humano</span>
         </div>
       </motion.button>
-        </div>
-      </div>
     </div>
   );
 }
