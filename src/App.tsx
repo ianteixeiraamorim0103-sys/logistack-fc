@@ -90,9 +90,18 @@ export default function App() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Limpar todos os estados para evitar vazamento de informações
     setIsLoggedIn(false);
     setActiveTab('dashboard');
+    setUserType('afiliado');
+    setUserProfile(null);
+    setDaysRemaining(null);
+    setIsExpired(false);
+    setIsMobileMenuOpen(false);
+    
+    // Fazer logout do Supabase
+    await supabase.auth.signOut();
   };
 
   if (!isLoggedIn) {

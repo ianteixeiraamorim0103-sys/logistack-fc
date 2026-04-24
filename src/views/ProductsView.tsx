@@ -153,7 +153,16 @@ export default function ProductsView({ userType }: { userType: string }) {
     if (!window.confirm('Deseja apagar este produto permanentemente?')) return;
     
     try {
-      const { error } = await supabase.from('produtos').delete().eq('id', id);
+      // Verificar se o produto pertence ao usuário logado
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const { error } = await supabase
+        .from('produtos')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id); // Garante que só deleta produtos do usuário
+      
       if (error) throw error;
       setProducts(products.filter(p => p.id !== id));
     } catch (err: any) {

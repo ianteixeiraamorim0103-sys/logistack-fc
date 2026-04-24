@@ -61,9 +61,14 @@ export default function MasterAdminView({ userType }: { userType: string }) {
     if (!supabase) return;
     setLoading(true);
     try {
+      // Obter usuário atual para filtrar apenas seus produtos
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
       const { data, error } = await supabase
         .from('produtos')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -146,7 +151,15 @@ export default function MasterAdminView({ userType }: { userType: string }) {
 
     if (!window.confirm('Deseja apagar este produto permanentemente?')) return;
 
-    const { error } = await supabase.from('produtos').delete().eq('id', id);
+    // Verificar se o produto pertence ao usuário logado
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Usuário não autenticado');
+
+    const { error } = await supabase
+      .from('produtos')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id); // Garante que só deleta produtos do usuário
     
     if (error) {
       console.error('Erro detalhado do Supabase:', error);

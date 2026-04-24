@@ -25,22 +25,29 @@ export default function DashboardProdutor() {
       if (!supabase) return;
 
       try {
-        // Busca contagem de produtos ativos
+        // Obter usuário atual para filtrar apenas seus produtos
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Usuário não autenticado');
+
+        // Busca contagem de produtos ativos do usuário
         const { count: activeCount } = await supabase
           .from('produtos')
           .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
           .eq('status', 'ativo');
 
-        // Busca contagem de produtos pendentes
+        // Busca contagem de produtos pendentes do usuário
         const { count: pendingCount } = await supabase
           .from('produtos')
           .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
           .eq('status', 'pendente');
 
-        // Busca as 5 movimentações mais recentes (produtos adicionados)
+        // Busca as 5 movimentações mais recentes do usuário (produtos adicionados)
         const { data: recent } = await supabase
           .from('produtos')
           .select('id, nome, created_at, status')
+          .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(5);
 
