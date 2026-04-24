@@ -74,6 +74,8 @@ export default function ProductsView({ userType }: { userType: string }) {
       if (error) throw error;
 
       if (data) {
+        console.log('🔍 DEBUG - Produtos do banco com user_id:', data.map(p => ({ id: p.id, nome: p.nome, user_id: p.user_id })));
+        
         setProducts(data.map(item => ({
           id: item.id,
           name: item.nome,
@@ -84,7 +86,8 @@ export default function ProductsView({ userType }: { userType: string }) {
           description: item.descricao,
           link_externo: item.link_externo,
           whatsapp_suporte: item.whatsapp_suporte,
-          cliques: item.cliques || 0
+          cliques: item.cliques || 0,
+          user_id: item.user_id // IMPORTANTE: Incluir user_id do banco
         })));
       }
     } catch (err: any) {
@@ -282,8 +285,11 @@ export default function ProductsView({ userType }: { userType: string }) {
                           
                           
                           <div className="absolute top-4 right-4 flex flex-col gap-2">
+                             {/* Debug IDs */}
+                             {console.log('🔍 DEBUG BOTÃO - ID Logado:', currentUser?.id, 'ID Dono:', product.user_id, 'Produto:', product.name)}
+                             
                              {/* Botão de apagar APENAS para dono do produto */}
-                             {userType === 'produtor' && currentUser?.id === product.user_id && (
+                             {userType === 'produtor' && currentUser?.id?.toString() === product.user_id?.toString() && (
                               <button 
                                 onClick={() => deleteProduct(product.id)}
                                 className="p-2 bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white rounded-full transition-all backdrop-blur-md"
