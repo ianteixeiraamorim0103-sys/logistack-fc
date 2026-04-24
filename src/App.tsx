@@ -178,7 +178,7 @@ export default function App() {
           </div>
         </header>
 
-        <div className="flex-1 p-8">
+        <div className="flex-1 p-4 lg:p-8 overflow-x-hidden">
           {isSuperAdminRoute ? (
             <SuperAdminView currentUserEmail="iangamer815@gmail.com" />
           ) : isExpired ? (

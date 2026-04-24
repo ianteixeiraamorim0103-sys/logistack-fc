@@ -1,5 +1,6 @@
-import { LayoutDashboard, Package, User, LogOut, CreditCard, Star, TrendingUp } from 'lucide-react';
-import { motion } from 'motion/react';
+import { LayoutDashboard, Package, User, LogOut, CreditCard, Star, TrendingUp, Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { useState } from 'react';
 
 interface SidebarProps {
   activeTab: string;
@@ -8,6 +9,8 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activeTab, setActiveTab, onLogout, userType }: SidebarProps & { userType: string }) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   // TRAVA DE SEGURANÇA: Menu items baseados no tipo de usuário
   const menuItems = [
     // Dashboard apenas para Produtores
@@ -21,18 +24,56 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, userType }:
   ];
 
   return (
-    <aside className="w-64 flex-shrink-0 flex flex-col border-r border-slate-800 bg-[#010409] fixed left-0 top-0 h-screen z-50">
-      <div className="p-6 mb-4 flex items-center gap-3">
-        <h1 className="text-2xl font-black tracking-tighter text-white uppercase italic select-none">
-          LOGI<span className="text-cyan-500 underline decoration-cyan-500/30 underline-offset-4">STACK</span>
-        </h1>
-      </div>
+    <>
+      {/* Botão Menu Hambúrguer - Mobile */}
+      <button
+        onClick={() => setIsMobileMenuOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-slate-800 border border-slate-700 rounded-xl text-white hover:bg-slate-700 transition-colors"
+      >
+        <Menu size={24} />
+      </button>
+
+      {/* Overlay Mobile */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar */}
+      <aside className={`
+        w-64 flex-shrink-0 flex flex-col border-r border-slate-800 bg-[#010409] 
+        fixed left-0 top-0 h-screen z-50 
+        transform transition-transform duration-300
+        lg:translate-x-0
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:block'}
+      `}>
+        <div className="p-6 mb-4 flex items-center justify-between">
+          <h1 className="text-2xl font-black tracking-tighter text-white uppercase italic select-none">
+            LOGI<span className="text-cyan-500 underline decoration-cyan-500/30 underline-offset-4">STACK</span>
+          </h1>
+          <button
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="lg:hidden p-1 text-slate-400 hover:text-white transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
 
       <nav className="flex-1 px-3 space-y-1">
         {menuItems.map((item) => (
           <button
             key={item.id}
-            onClick={() => setActiveTab(item.id)}
+            onClick={() => {
+              setActiveTab(item.id);
+              setIsMobileMenuOpen(false); // Fechar menu no mobile
+            }}
             className={`w-full flex items-center gap-3 px-3 py-3 text-sm font-bold rounded-xl transition-all ${
               activeTab === item.id
                 ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/20'
@@ -83,6 +124,7 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, userType }:
         </button>
       </div>
     </aside>
+    </>
   );
 }
 

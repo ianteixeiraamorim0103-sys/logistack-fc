@@ -24,6 +24,14 @@
     background-color: var(--background);
     color: var(--card-foreground);
     font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+  
+  /* Mobile adjustments */
+  @media (max-width: 768px) {
+    body {
+      font-size: 14px;
+    }
   }
 }
 
