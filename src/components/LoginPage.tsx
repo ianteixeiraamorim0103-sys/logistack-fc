@@ -23,6 +23,20 @@ export default function LoginPage({ onLogin, forcedType }: LoginPageProps) {
 
     try {
       if (mode === 'signup') {
+        // Verificar se email já existe para evitar múltiplas contas
+        const { data: existingProfile, error: emailCheckError } = await supabase
+          .from('profiles')
+          .select('email, tipo_usuario')
+          .eq('email', email)
+          .single();
+        
+        if (!emailCheckError && existingProfile) {
+          // Email já existe - verificar se é produtor ou afiliado
+          const userTypeText = existingProfile.tipo_usuario === 'afiliado' ? 'Afiliado' : 'Produtor';
+          alert(`Você já possui uma conta ativa como ${userTypeText}! Use a opção de login para acessar sua conta.`);
+          return;
+        }
+
         // Trava de 10 vagas para afiliados
         if (userType === 'afiliado') {
           const { data: existingAffiliates, error: countError } = await supabase
