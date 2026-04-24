@@ -96,9 +96,14 @@ export default function MasterAdminView({ userType }: { userType: string }) {
     setError(null);
 
     try {
+      // Obter usuário atual
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
       const { error } = await supabase
         .from('produtos')
         .insert([{
+          user_id: user.id, // ID do usuário autenticado
           nome: formData.nome,
           imagem_url: formData.imagem_url,
           preco_custo: parseFloat(formData.preco_custo),
