@@ -21,14 +21,15 @@ import PixelTracker from './components/PixelTracker';
 import { supabase } from './lib/supabase';
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(true); 
-  const [activeTab, setActiveTab] = useState('products');
+  const [isLoggedIn, setIsLoggedIn] = useState(false); 
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [userType, setUserType] = useState<'afiliado' | 'produtor'>('afiliado');
   const [userProfile, setUserProfile] = useState<{ created_at: string; status_pagamento: string; email: string } | null>(null);
   const [daysRemaining, setDaysRemaining] = useState<number | null>(null);
   const [isExpired, setIsExpired] = useState(false);
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [isSuperAdminRoute, setIsSuperAdminRoute] = useState(currentPath === '/mestre-logistack');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleLocationChange = () => setCurrentPath(window.location.pathname);
@@ -140,45 +141,64 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans selection:bg-blue-500/30 selection:text-white flex border-hidden relative">
-      <PixelTracker />
-      {/* Sidebar - Fixed/Aside */}
-      <Sidebar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        onLogout={handleLogout}
-        userType={userType}
-      />
+    <div className="flex flex-col min-h-screen bg-[#020617] text-white overflow-hidden">
+      {/* Mobile Menu Button */}
+      <div className="lg:hidden flex items-center justify-between p-4 border-b border-slate-800">
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 bg-slate-800 rounded-lg text-white"
+        >
+          {isMobileMenuOpen ? '✕' : '☰'}
+        </button>
+        <h1 className="text-lg font-bold">LOGISTACK</h1>
+        <div className="w-8"></div>
+      </div>
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 ml-64 bg-[#0f172a]">
-        <header className="h-16 flex items-center justify-between px-8 border-b border-slate-800 bg-[#0f172a]/50 sticky top-0 z-40 backdrop-blur-sm">
-          <div className="flex items-center gap-2">
-            <img src="https://vroxxpzceusbyrfjhptu.supabase.co/storage/v1/object/public/public-assents/WhatsApp%20Image%202026-04-23%20at%2014.15.15%20(1).jpeg" alt="Logistack" className="h-8 w-auto rounded-lg" style={{ borderRadius: '8px' }} />
-            <span className="mx-2 text-slate-700">/</span> 
-            <span className="text-white capitalize font-black tracking-tight text-xs">{activeTab}</span>
-            <span className="ml-3 px-2 py-0.5 bg-slate-800 border border-slate-700 rounded text-[10px] text-slate-400 uppercase font-black uppercase tracking-widest">{userType === 'produtor' ? 'Produtor' : 'Afiliado'}</span>
-            {userProfile?.email && (
-              <span className="ml-2 px-3 py-1 bg-cyan-600/10 border border-cyan-500/20 rounded-full text-[10px] text-cyan-400 font-black uppercase tracking-widest">
-                {userProfile.email}
-              </span>
-            )}
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-black/50" onClick={() => setIsMobileMenuOpen(false)}>
+          <div className="w-64 h-full bg-slate-900 p-4" onClick={(e) => e.stopPropagation()}>
+            <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} userType={userType} />
           </div>
-          <div className="flex items-center gap-4">
-            {daysRemaining !== null && !isExpired && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-full">
-                <Clock size={12} className="text-amber-500" />
-                <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">
-                  {daysRemaining} {daysRemaining === 1 ? 'dia' : 'dias'} de teste restantes
+        </div>
+      )}
+
+      {/* Desktop Layout */}
+      <div className="flex flex-col lg:flex-row flex-1">
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block">
+          <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} userType={userType} />
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col">
+          <header className="hidden lg:flex items-center justify-between px-8 py-4 border-b border-slate-800 bg-slate-900/50">
+            <div className="flex items-center gap-4">
+              <img src="https://vroxxpzceusbyrfjhptu.supabase.co/storage/v1/object/public/public-assents/WhatsApp%20Image%202026-04-23%20at%2014.15.15%20(1).jpeg" alt="Logistack" className="h-8 w-auto rounded-lg" style={{ borderRadius: '8px' }} />
+              <span className="mx-2 text-slate-700">/</span> 
+              <span className="text-white capitalize font-black tracking-tight text-xs">{activeTab}</span>
+              <span className="ml-3 px-2 py-0.5 bg-slate-800 border border-slate-700 rounded text-[10px] text-slate-400 uppercase font-black uppercase tracking-widest">{userType === 'produtor' ? 'Produtor' : 'Afiliado'}</span>
+              {userProfile?.email && (
+                <span className="ml-2 px-3 py-1 bg-cyan-600/10 border border-cyan-500/20 rounded-full text-[10px] text-cyan-400 font-black uppercase tracking-widest">
+                  {userProfile.email}
                 </span>
-              </div>
-            )}
-                        <div className="h-4 w-[1px] bg-slate-800"></div>
-            <span className="text-xs text-slate-500 font-mono">v1.2.0</span>
-          </div>
-        </header>
+              )}
+            </div>
+            <div className="flex items-center gap-4">
+              {daysRemaining !== null && !isExpired && (
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-full">
+                  <Clock size={12} className="text-amber-500" />
+                  <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">
+                    {daysRemaining} {daysRemaining === 1 ? 'dia' : 'dias'} de teste restantes
+                  </span>
+                </div>
+              )}
+              <div className="h-4 w-[1px] bg-slate-800"></div>
+              <span className="text-xs text-slate-500 font-mono">v1.2.0</span>
+            </div>
+          </header>
 
-        <div className="flex-1 p-4 lg:p-8 overflow-x-hidden">
+          <div className="flex-1 p-4 lg:p-8 overflow-x-hidden w-full max-w-screen-xl mx-auto">
           {isSuperAdminRoute ? (
             <SuperAdminView currentUserEmail="iangamer815@gmail.com" />
           ) : isExpired ? (
@@ -252,6 +272,8 @@ export default function App() {
           <span>Suporte Humano</span>
         </div>
       </motion.button>
+        </div>
+      </div>
     </div>
   );
 }
