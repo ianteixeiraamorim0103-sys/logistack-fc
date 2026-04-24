@@ -100,8 +100,17 @@ export default function App() {
     setIsExpired(false);
     setIsMobileMenuOpen(false);
     
+    // Resetar estados de produtos em todos os componentes
+    // Isso força limpeza de dados de produtos ao fazer logout
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('logout-reset'));
+    }
+    
     // Fazer logout do Supabase
     await supabase.auth.signOut();
+    
+    // Forçar reload para limpar qualquer estado residual
+    window.location.href = '/login-produtor';
   };
 
   if (!isLoggedIn) {

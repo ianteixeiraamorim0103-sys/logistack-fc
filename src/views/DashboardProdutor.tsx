@@ -20,6 +20,22 @@ export default function DashboardProdutor() {
     loading: true
   });
 
+  // Reset de métricas no logout
+  useEffect(() => {
+    const handleLogoutReset = () => {
+      console.log('🔄 RESET Dashboard - Limpando métricas no logout');
+      setMetrics({
+        totalActive: 0,
+        totalPending: 0,
+        recentProducts: [],
+        loading: true
+      });
+    };
+
+    window.addEventListener('logout-reset', handleLogoutReset);
+    return () => window.removeEventListener('logout-reset', handleLogoutReset);
+  }, []);
+
   useEffect(() => {
     async function fetchDashboardMetrics() {
       if (!supabase) return;
@@ -29,27 +45,32 @@ export default function DashboardProdutor() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Usuário não autenticado');
 
+        console.log('🔍 DEBUG Dashboard - ID do usuário logado:', user.id);
+
         // Busca contagem de produtos ativos do usuário
         const { count: activeCount } = await supabase
           .from('produtos')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id)
+          .eq('user_id', user.id) // OBRIGATÓRIO: Filtra apenas produtos do usuário
           .eq('status', 'ativo');
 
         // Busca contagem de produtos pendentes do usuário
         const { count: pendingCount } = await supabase
           .from('produtos')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id)
+          .eq('user_id', user.id) // OBRIGATÓRIO: Filtra apenas produtos do usuário
           .eq('status', 'pendente');
 
         // Busca as 5 movimentações mais recentes do usuário (produtos adicionados)
         const { data: recent } = await supabase
           .from('produtos')
           .select('id, nome, created_at, status')
-          .eq('user_id', user.id)
+          .eq('user_id', user.id) // OBRIGATÓRIO: Filtra apenas produtos do usuário
           .order('created_at', { ascending: false })
           .limit(5);
+
+        console.log('🔍 DEBUG Dashboard - Produtos ativos encontrados:', activeCount || 0);
+        console.log('🔍 DEBUG Dashboard - Produtos pendentes encontrados:', pendingCount || 0);
 
         setMetrics({
           totalActive: activeCount || 0,

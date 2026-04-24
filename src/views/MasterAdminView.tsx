@@ -19,7 +19,7 @@ interface Product {
 
 // TODO: No futuro, proteger esta rota com senha de admin.
 export default function MasterAdminView({ userType }: { userType: string }) {
-  const [produtos, setProdutos] = useState<Product[]>([]);
+  const [produtos, setProdutos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +36,19 @@ export default function MasterAdminView({ userType }: { userType: string }) {
     categoria: 'Casa & Estilo de Vida',
     is_locked: false
   });
+
+  // Reset de produtos no logout
+  useEffect(() => {
+    const handleLogoutReset = () => {
+      console.log('🔄 RESET - Limpando produtos no logout');
+      setProdutos([]);
+      setLoading(true);
+      setError(null);
+    };
+
+    window.addEventListener('logout-reset', handleLogoutReset);
+    return () => window.removeEventListener('logout-reset', handleLogoutReset);
+  }, []);
 
   useEffect(() => {
     if (userType === 'produtor') {
@@ -65,11 +78,16 @@ export default function MasterAdminView({ userType }: { userType: string }) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
+      console.log('🔍 DEBUG - ID do usuário logado:', user.id);
+      
       const { data, error } = await supabase
         .from('produtos')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', user.id) // OBRIGATÓRIO: Filtra apenas produtos do usuário
         .order('created_at', { ascending: false });
+
+      console.log('🔍 DEBUG - Query com filtro user_id:', `.eq('user_id', '${user.id}')`);
+      console.log('🔍 DEBUG - Produtos encontrados:', data?.length || 0);
 
       if (error) {
         alert('Erro de conexão: Verifique a internet ou as chaves do banco');
