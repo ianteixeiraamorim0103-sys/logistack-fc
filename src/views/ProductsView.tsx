@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, Copy, TrendingUp, RefreshCcw, ExternalLink, Image as ImageIcon, Trash2, Search, Share2, ShieldCheck, MessageCircle } from 'lucide-react';
+import { Plus, Copy, TrendingUp, RefreshCcw, ExternalLink, Image as ImageIcon, Trash2, Search, Share2, ShieldCheck, MessageCircle, Package } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import SuggestProductModal from '../components/SuggestProductModal';
 
@@ -246,13 +246,240 @@ export default function ProductsView({ userType }: { userType: string }) {
               <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Alinhando satélites da operação...</p>
             </div>
           ) : (
+            (() => {
+              const filteredProducts = products.filter(p => 
+                p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                p.description.toLowerCase().includes(searchTerm.toLowerCase())
+              );
+              
+              if (filteredProducts.length === 0) {
+                return (
+                  <div className="flex flex-col items-center justify-center py-32 text-center space-y-6 min-h-[400px]">
+                    <Package size={80} className="text-slate-600 mx-auto" />
+                    <div>
+                      <p className="text-slate-500 font-medium text-xl mb-2">Nenhum produto encontrado</p>
+                      <p className="text-slate-600 text-sm">
+                        {searchTerm ? 'Tente buscar com outros termos' : 'A vitrine está vazia no momento.'}
+                      </p>
+                      {userType === 'produtor' && !searchTerm && (
+                        <button 
+                          onClick={() => setIsSuggestModalOpen(true)}
+                          className="mt-4 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-black uppercase tracking-widest transition-all"
+                        >
+                          Adicionar Produto
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+              
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-screen-xl mx-auto px-4">
+                  <AnimatePresence mode="popLayout">
+                    {filteredProducts.map((product) => (
+                      <motion.div
+                        key={product.id}
+                        layout
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="group relative flex flex-col bg-[#1e293b] border border-slate-800 rounded-[2.5rem] overflow-hidden hover:border-cyan-500 transition-all duration-300 shadow-2xl"
+                      >
+                        {/* Trust Badge */}
+                        <div className="absolute top-4 left-4 z-10">
+                          <span className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white rounded-full text-[9px] font-black uppercase tracking-widest shadow-xl">
+                            <ShieldCheck size={12} />
+                            Oferta Verificada
+                          </span>
+                        </div>
+
+                        <div className="relative aspect-square overflow-hidden bg-slate-900">
+                          {product.image ? (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              loading="lazy"
+                              className="w-full aspect-square object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="w-full aspect-square flex items-center justify-center">
+                              <span className="text-4xl">📦</span>
+                            </div>
+                          )}
+                          
+                          
+                          <div className="absolute top-4 right-4 flex flex-col gap-2">
+                             {/* Debug IDs */}
+                             {console.log('🔍 DEBUG BOTÃO - ID Logado:', currentUser?.id, 'ID Dono:', product.user_id, 'Produto:', product.name)}
+                             
+                             {/* Botão de apagar APENAS para dono do produto */}
+                             {userType === 'produtor' && currentUser?.id?.toString() === product.user_id?.toString() && (
+                              <button 
+                                onClick={() => deleteProduct(product.id)}
+                                className="p-2 bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white rounded-full transition-all backdrop-blur-md"
+                                title="Apagar meu produto"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleSupportWhatsApp(product)}
+                              className="p-3 bg-emerald-500 text-white rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all flex items-center justify-center gap-2"
+                              title="Conversar com Produtor"
+                            >
+                              <MessageCircle size={18} />
+                              <span className="text-[10px] font-black uppercase tracking-widest pr-1">Dúvidas</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="p-6 space-y-4 flex-1 flex flex-col">
+                          <div>
+                            <h3 className="text-xl font-black text-white leading-tight mb-1 uppercase tracking-tighter line-clamp-2">{product.name}</h3>
+                            <p className="text-slate-500 text-xs font-bold line-clamp-1">{product.description}</p>
+                          </div>
+                          
+                          <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-800/50">
+                            <div>
+                               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Preço Sugerido</p>
+                               <p className="text-2xl font-black text-white font-mono tracking-tighter">R$ {product.price.toFixed(2)}</p>
+                            </div>
+                            <div className="text-right">
+                               <p className="text-[8px] font-black text-cyan-500 uppercase tracking-widest">✨ NOVO PRODUTO</p>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => handleAfiliarse(product)}
+                            className="w-full py-5 bg-cyan-500 hover:bg-cyan-400 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-2xl shadow-cyan-500/30 flex items-center justify-center gap-3 active:brightness-110 border-b-4 border-cyan-700"
+                          >
+                            <ExternalLink size={18} />
+                            AFILIAR-SE AGORA
+                          </button>
+
+                          {userType === 'produtor' && (
+                             <button 
+                                onClick={() => handleCopy(product)}
+                                className="w-full py-3 bg-slate-800/50 text-slate-500 rounded-xl text-[9px] font-black uppercase tracking-widest hover:text-white transition-all border border-slate-800"
+                              >
+                                <Copy size={16} /> {copyingId === product.id ? 'Copiado!' : 'Copiar Texto de Venda'}
+                              </button>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              );
+            })()}
+          ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-screen-xl mx-auto px-4">
               <AnimatePresence mode="popLayout">
                 {products
                   .filter(p => (p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                                p.description.toLowerCase().includes(searchTerm.toLowerCase())))
-                  .map((product) => {
-                    return (
+                  .map((product) => (
+                    <motion.div
+                      key={product.id}
+                      layout
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="group relative flex flex-col bg-[#1e293b] border border-slate-800 rounded-[2.5rem] overflow-hidden hover:border-cyan-500 transition-all duration-300 shadow-2xl"
+                    >
+                      {/* Trust Badge */}
+                      <div className="absolute top-4 left-4 z-10">
+                        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white rounded-full text-[9px] font-black uppercase tracking-widest shadow-xl">
+                          <ShieldCheck size={12} />
+                          Oferta Verificada
+                        </span>
+                      </div>
+
+                      <div className="relative aspect-square overflow-hidden bg-slate-900">
+                        {product.image ? (
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            loading="lazy"
+                            className="w-full aspect-square object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="w-full aspect-square flex items-center justify-center">
+                            <span className="text-4xl">📦</span>
+                          </div>
+                        )}
+                        
+                        
+                        <div className="absolute top-4 right-4 flex flex-col gap-2">
+                           {/* Debug IDs */}
+                           {console.log('🔍 DEBUG BOTÃO - ID Logado:', currentUser?.id, 'ID Dono:', product.user_id, 'Produto:', product.name)}
+                           
+                           {/* Botão de apagar APENAS para dono do produto */}
+                           {userType === 'produtor' && currentUser?.id?.toString() === product.user_id?.toString() && (
+                            <button 
+                              onClick={() => deleteProduct(product.id)}
+                              className="p-2 bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white rounded-full transition-all backdrop-blur-md"
+                              title="Apagar meu produto"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleSupportWhatsApp(product)}
+                            className="p-3 bg-emerald-500 text-white rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all flex items-center justify-center gap-2"
+                            title="Conversar com Produtor"
+                          >
+                            <MessageCircle size={18} />
+                            <span className="text-[10px] font-black uppercase tracking-widest pr-1">Dúvidas</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="p-6 space-y-4 flex-1 flex flex-col">
+                        <div>
+                          <h3 className="text-xl font-black text-white leading-tight mb-1 uppercase tracking-tighter line-clamp-2">{product.name}</h3>
+                          <p className="text-slate-500 text-xs font-bold line-clamp-1">{product.description}</p>
+                        </div>
+                        
+                        <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-800/50">
+                          <div>
+                             <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Preço Sugerido</p>
+                             <p className="text-2xl font-black text-white font-mono tracking-tighter">R$ {product.price.toFixed(2)}</p>
+                          </div>
+                          <div className="text-right">
+                             <p className="text-[8px] font-black text-cyan-500 uppercase tracking-widest">✨ NOVO PRODUTO</p>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => handleAfiliarse(product)}
+                          className="w-full py-5 bg-cyan-500 hover:bg-cyan-400 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-2xl shadow-cyan-500/30 flex items-center justify-center gap-3 active:brightness-110 border-b-4 border-cyan-700"
+                        >
+                          <ExternalLink size={18} />
+                          AFILIAR-SE AGORA
+                        </button>
+
+                        {userType === 'produtor' && (
+                           <button 
+                              onClick={() => handleCopy(product)}
+                              className="w-full py-3 bg-slate-800/50 text-slate-500 rounded-xl text-[9px] font-black uppercase tracking-widest hover:text-white transition-all border border-slate-800"
+                            >
+                              <Copy size={16} /> {copyingId === product.id ? 'Copiado!' : 'Copiar Texto de Venda'}
+                            </button>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-screen-xl mx-auto px-4">
+                <AnimatePresence mode="popLayout">
+                  {products
+                    .filter(p => (p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                 p.description.toLowerCase().includes(searchTerm.toLowerCase())))
+                    .map((product) => (
                       <motion.div
                         key={product.id}
                         layout
@@ -345,11 +572,12 @@ export default function ProductsView({ userType }: { userType: string }) {
                       </motion.div>
                     );
                   })}
-              </AnimatePresence>
-            </div>
-          )}
-        </>
-      ) : (
+                </AnimatePresence>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-screen-xl mx-auto px-4">
+                <AnimatePresence mode="popLayout">
+                  {filteredProducts.map((product) => {
         <div className="bg-[#1e293b] border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left">

@@ -182,14 +182,14 @@ export default function App() {
       )}
 
       {/* Desktop Layout */}
-      <div className="flex flex-col lg:flex-row flex-1">
+      <div className="flex flex-col lg:flex-row flex-1 min-h-screen">
         {/* Desktop Sidebar */}
         <div className="hidden lg:block">
           <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} userType={userType} />
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-screen">
           <header className="hidden lg:flex items-center justify-between px-8 py-4 border-b border-slate-800 bg-slate-900/50">
             <div className="flex items-center gap-4">
               <img src="https://vroxxpzceusbyrfjhptu.supabase.co/storage/v1/object/public/public-assents/WhatsApp%20Image%202026-04-23%20at%2014.15.15%20(1).jpeg" alt="Logistack" className="h-8 w-auto rounded-lg" style={{ borderRadius: '8px' }} />
@@ -216,7 +216,7 @@ export default function App() {
             </div>
           </header>
 
-          <div className="flex-1 p-4 lg:p-8 overflow-x-hidden w-full max-w-screen-xl mx-auto">
+          <div className="flex-1 p-4 lg:p-8 overflow-x-hidden w-full lg:w-auto max-w-screen-xl mx-auto">
             {isSuperAdminRoute ? (
               <SuperAdminView currentUserEmail="iangamer815@gmail.com" />
             ) : isExpired ? (

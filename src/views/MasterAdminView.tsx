@@ -480,7 +480,13 @@ export default function MasterAdminView({ userType }: { userType: string }) {
                 <tbody className="divide-y divide-slate-800">
                   {produtos.filter(p => p.publicado).length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="px-8 py-12 text-center text-slate-500 font-medium">Nenhum produto publicado.</td>
+                      <td colSpan={4} className="px-8 py-24">
+                        <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-center">
+                          <Package size={64} className="text-slate-600 mx-auto mb-6" />
+                          <p className="text-slate-500 font-medium text-lg mb-2">Nenhum produto publicado.</p>
+                          <p className="text-slate-600 text-sm">Comece adicionando seu primeiro produto para aparecer na vitrine.</p>
+                        </div>
+                      </td>
                     </tr>
                   ) : (
                     produtos.filter(p => p.publicado).map((p) => (
