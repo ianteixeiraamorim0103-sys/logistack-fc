@@ -15,6 +15,7 @@ interface Product {
   link_externo?: string;
   whatsapp_suporte?: string;
   cliques?: number;
+  user_id?: string; // Adicionar campo user_id
 }
 
 export default function ProductsView({ userType }: { userType: string }) {
@@ -26,8 +27,23 @@ export default function ProductsView({ userType }: { userType: string }) {
   const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
   const [affiliateName, setAffiliateName] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const categories = ['Todos', 'Casa & Estilo de Vida', 'Beleza', 'Suplementos', 'Outros'];
+
+  // Carregar usuário atual
+  useEffect(() => {
+    async function loadCurrentUser() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setCurrentUser(user);
+        console.log('🔍 ProductsView - Usuário carregado:', user?.id);
+      } catch (error) {
+        console.error('Erro ao carregar usuário:', error);
+      }
+    }
+    loadCurrentUser();
+  }, []);
 
   // Personalização da Vitrine via URL (ex: /vitrine/ian)
   useEffect(() => {
@@ -266,10 +282,12 @@ export default function ProductsView({ userType }: { userType: string }) {
                           
                           
                           <div className="absolute top-4 right-4 flex flex-col gap-2">
-                             {userType === 'produtor' && (
+                             {/* Botão de apagar APENAS para dono do produto */}
+                             {userType === 'produtor' && currentUser?.id === product.user_id && (
                               <button 
                                 onClick={() => deleteProduct(product.id)}
                                 className="p-2 bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white rounded-full transition-all backdrop-blur-md"
+                                title="Apagar meu produto"
                               >
                                 <Trash2 size={16} />
                               </button>
