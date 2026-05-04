@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Clock } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import SuperAdminView from '../views/SuperAdminView';
-import SubscriptionGate from './SubscriptionGate';
+// SubscriptionGate removido - controle manual via Supabase
 import DashboardView from '../views/DashboardView';
 import ProductsView from '../views/ProductsView';
 import GrowthCenterView from '../views/GrowthCenterView';
@@ -65,9 +65,7 @@ export default function MainContent({
       <div className="flex-1 p-4 lg:p-8 overflow-x-hidden w-full max-w-screen-xl mx-auto">
         {isSuperAdminRoute ? (
           <SuperAdminView currentUserEmail="iangamer815@gmail.com" />
-        ) : isExpired ? (
-          <SubscriptionGate onActivate={() => {}} />
-        ) : (
+        ) : ( // ACESSO TOTAL LIBERADO - Sem bloqueio por trial expirado
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

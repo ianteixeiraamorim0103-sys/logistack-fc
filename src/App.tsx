@@ -16,7 +16,7 @@ import MasterAdminView from './views/MasterAdminView';
 import ActivateAccountView from './views/ActivateAccountView';
 import GrowthCenterView from './views/GrowthCenterView';
 import SuperAdminView from './views/SuperAdminView';
-import SubscriptionGate from './components/SubscriptionGate';
+// SubscriptionGate removido - controle manual via Supabase
 import PixelTracker from './components/PixelTracker';
 import { supabase } from './lib/supabase';
 
@@ -25,6 +25,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [userType, setUserType] = useState<'afiliado' | 'produtor'>('afiliado');
   const [userProfile, setUserProfile] = useState<{ created_at: string; status_pagamento: string; email: string } | null>(null);
+  // Variáveis de controle removidas - acesso manual via Supabase
   const [daysRemaining, setDaysRemaining] = useState<number | null>(null);
   const [isExpired, setIsExpired] = useState(false);
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -46,31 +47,15 @@ export default function App() {
         const { data: { user } } = await supabase.auth.getUser();
         const userEmail = user?.email || '';
 
-        // TEMPORÁRIO: Não ler perfil logo de cara para evitar erro 400
-        let profileDate: string;
-        let paymentStatus: string;
-        let type: 'afiliado' | 'produtor' = 'afiliado';
+        // CONTROLE MANUAL VIA SUPABASE - Acesso liberado para todos usuários logados
+        const profileDate = new Date().toISOString();
+        const paymentStatus = 'liberado_manual'; // Controle manual no banco
+        const type: 'afiliado' | 'produtor' = 'afiliado';
 
-        // Usar localStorage temporariamente para evitar leitura de perfil
-        profileDate = localStorage.getItem('logistack_trial_start') || new Date().toISOString();
-        paymentStatus = 'pendente';
-        if (!localStorage.getItem('logistack_trial_start')) {
-          localStorage.setItem('logistack_trial_start', profileDate);
-        }
-
-        const startDate = new Date(profileDate);
-        const today = new Date();
-        const diffTime = today.getTime() - startDate.getTime();
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        const remaining = 7 - diffDays;
-
-        setDaysRemaining(remaining > 0 ? remaining : 0);
+        setDaysRemaining(999); // Indicador de acesso liberado
         setUserProfile({ created_at: profileDate, status_pagamento: paymentStatus, email: userEmail });
         setUserType(type);
-        
-        if (remaining <= 0 && paymentStatus !== 'assinante_ativo') {
-          setIsExpired(true);
-        }
+        setIsExpired(false); // Nunca expira - controle manual no Supabase
       } catch (e) {
         console.error('Erro ao validar assinatura:', e);
       }
@@ -203,14 +188,7 @@ export default function App() {
               )}
             </div>
             <div className="flex items-center gap-4">
-              {daysRemaining !== null && !isExpired && (
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-full">
-                  <Clock size={12} className="text-amber-500" />
-                  <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">
-                    {daysRemaining} {daysRemaining === 1 ? 'dia' : 'dias'} de teste restantes
-                  </span>
-                </div>
-              )}
+              {/* CONTROLE MANUAL REMOVIDO - Acesso liberado via Supabase */}
               <div className="h-4 w-[1px] bg-slate-800"></div>
               <span className="text-xs text-slate-500 font-mono">v1.2.0</span>
             </div>
@@ -219,9 +197,7 @@ export default function App() {
           <div className="flex-1 p-4 lg:p-8 overflow-x-hidden w-full lg:w-auto max-w-screen-xl mx-auto">
             {isSuperAdminRoute ? (
               <SuperAdminView currentUserEmail="iangamer815@gmail.com" />
-            ) : isExpired ? (
-              <SubscriptionGate onActivate={() => {}} />
-            ) : (
+            ) : ( // ACESSO TOTAL LIBERADO - Sem bloqueio por trial expirado
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}
